@@ -8,6 +8,8 @@ const { parse } = require('./parser');
 const { exportEnv } = require('./export');
 const { formatExportSuccess, formatExportHeader, formatExportError } = require('./formatExport');
 
+const SUPPORTED_FORMATS = ['json', 'yaml', 'dotenv'];
+
 function getArg(args, flag, fallback = null) {
   const idx = args.indexOf(flag);
   return idx !== -1 && args[idx + 1] ? args[idx + 1] : fallback;
@@ -18,6 +20,11 @@ function run(argv = process.argv.slice(2)) {
   const format     = getArg(argv, '--format', 'json');
   const outputPath = getArg(argv, '--output', null);
   const noHeader   = argv.includes('--no-header');
+
+  if (!SUPPORTED_FORMATS.includes(format)) {
+    console.error(`✖ Unsupported format: "${format}". Supported formats: ${SUPPORTED_FORMATS.join(', ')}`);
+    process.exit(1);
+  }
 
   let raw;
   try {
