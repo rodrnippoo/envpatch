@@ -76,6 +76,14 @@ describe('validateSchema', () => {
     const errors = validateSchema(env, schema);
     expect(errors[0].error).toMatch(/unknown type/);
   });
+
+  test('returns multiple errors when multiple keys are invalid', () => {
+    const env = { PORT: 'abc', API_URL: 'not-a-url' };
+    const schema = { PORT: { type: 'number' }, API_URL: { type: 'url' } };
+    const errors = validateSchema(env, schema);
+    expect(errors).toHaveLength(2);
+    expect(errors.map((e) => e.key)).toEqual(expect.arrayContaining(['PORT', 'API_URL']));
+  });
 });
 
 describe('formatSchemaErrors', () => {
@@ -87,5 +95,15 @@ describe('formatSchemaErrors', () => {
     const errors = [{ key: 'PORT', error: 'expected number' }];
     expect(formatSchemaErrors(errors)).toContain('PORT');
     expect(formatSchemaErrors(errors)).toContain('expected number');
+  });
+
+  test('formats multiple errors', () => {
+    const errors = [
+      { key: 'PORT', error: 'expected number' },
+      { key: 'HOST', error: 'required' },
+    ];
+    const output = formatSchemaErrors(errors);
+    expect(output).toContain('PORT');
+    expect(output).toContain('HOST');
   });
 });
